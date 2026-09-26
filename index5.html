@@ -1,0 +1,3438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>StudyAI — Adaptive Personal Study Coach</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --bg: #08080d;
+            --surface: #111118;
+            --surface2: #181821;
+            --border: #292936;
+            --text: #f7f7fb;
+            --muted: #9999a8;
+            --primary: #8b5cf6;
+            --primary2: #c084fc;
+            --green: #34d399;
+            --red: #fb7185;
+            --yellow: #fbbf24;
+            --blue: #38bdf8;
+            --shadow: 0 20px 50px rgba(0, 0, 0, .25);
+        }
+        
+        body.light {
+            --bg: #f5f5f7;
+            --surface: #ffffff;
+            --surface2: #f0f0f5;
+            --border: #ddddE8;
+            --text: #17171c;
+            --muted: #666675;
+            --shadow: 0 15px 40px rgba(0, 0, 0, .08);
+        }
+        
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: radial-gradient( circle at top right, rgba(139, 92, 246, .16), transparent 35%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        /* HEADER */
+        
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 18px 6%;
+            border-bottom: 1px solid var(--border);
+            background: rgba(8, 8, 13, .85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        body.light header {
+            background: rgba(255, 255, 255, .85);
+        }
+        
+        .logo {
+            font-size: 25px;
+            font-weight: 900;
+            color: var(--primary2);
+        }
+        
+        .logo span {
+            color: var(--text);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+        }
+        
+        .icon-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+        }
+        /* MAIN */
+        
+        .container {
+            width: 90%;
+            max-width: 1250px;
+            margin: 45px auto;
+        }
+        
+        .hero {
+            margin-bottom: 35px;
+        }
+        
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 68px);
+            line-height: 1.05;
+            margin-bottom: 15px;
+        }
+        
+        .gradient {
+            background: linear-gradient( 90deg, #8b5cf6, #c084fc, #38bdf8);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        
+        .hero p {
+            max-width: 750px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        /* GRID */
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        /* CARD */
+        
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .card h2 {
+            margin-bottom: 20px;
+        }
+        /* FORM */
+        
+        label {
+            display: block;
+            color: var(--muted);
+            margin: 16px 0 8px;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            outline: none;
+            font-size: 15px;
+        }
+        
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+        }
+        /* BUTTON */
+        
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 13px 18px;
+            background: var(--primary);
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .8;
+        }
+        
+        button.secondary {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        button.danger {
+            background: #7f1d1d;
+        }
+        
+        .full {
+            width: 100%;
+            margin-top: 20px;
+        }
+        /* DASHBOARD */
+        
+        .dashboard,
+        .quiz {
+            display: none;
+            margin-top: 25px;
+        }
+        /* STATS */
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 13px;
+        }
+        
+        .stat {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 18px;
+            border-radius: 16px;
+        }
+        
+        .number {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary2);
+            margin-bottom: 5px;
+        }
+        
+        .stat small {
+            color: var(--muted);
+        }
+        /* PROGRESS */
+        
+        .progress {
+            height: 11px;
+            background: var(--surface2);
+            border-radius: 30px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient( 90deg, #7c3aed, #c084fc, #38bdf8);
+            transition: .6s;
+        }
+        /* PLAN */
+        
+        .plan {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            background: var(--surface2);
+        }
+        
+        .plan strong {
+            color: var(--primary2);
+        }
+        
+        .plan p {
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        /* RECOMMENDATION */
+        
+        .recommendation {
+            border-left: 4px solid var(--primary);
+            padding: 18px;
+            background: rgba(139, 92, 246, .08);
+            border-radius: 10px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+        /* TOPICS */
+        
+        .topic-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .topic {
+            background: var(--surface2);
+            padding: 14px;
+            border-radius: 12px;
+        }
+        
+        .topic-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .topic-header span {
+            color: var(--muted);
+        }
+        
+        .mini-progress {
+            height: 7px;
+            background: var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .mini-progress div {
+            height: 100%;
+            background: var(--primary);
+        }
+        /* QUIZ */
+        
+        .quiz-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 20px;
+            background: rgba(139, 92, 246, .15);
+            color: var(--primary2);
+            font-size: 12px;
+            font-weight: 800;
+            margin-right: 5px;
+        }
+        
+        .timer {
+            font-weight: 900;
+            color: var(--yellow);
+        }
+        
+        .question {
+            font-size: 24px;
+            line-height: 1.5;
+            margin: 28px 0;
+        }
+        
+        .answers {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .answer {
+            width: 100%;
+            text-align: left;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .answer.correct {
+            background: rgba(52, 211, 153, .15);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        
+        .answer.wrong {
+            background: rgba(251, 113, 133, .15);
+            border-color: var(--red);
+            color: var(--red);
+        }
+        
+        .result {
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .result.correct {
+            background: rgba(52, 211, 153, .12);
+            color: var(--green);
+        }
+        
+        .result.wrong {
+            background: rgba(251, 113, 133, .12);
+            color: var(--red);
+        }
+        
+        .explanation {
+            margin-top: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+        
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        /* HISTORY */
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .good {
+            color: var(--green);
+        }
+        
+        .medium {
+            color: var(--yellow);
+        }
+        
+        .bad {
+            color: var(--red);
+        }
+        /* TOAST */
+        
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: .3s;
+            z-index: 200;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        /* RESPONSIVE */
+        
+        @media(max-width:950px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media(max-width:750px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            header {
+                padding: 15px 4%;
+            }
+            .container {
+                width: 92%;
+            }
+            .header-actions span {
+                display: none;
+            }
+        }
+        
+        @media(max-width:450px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            .quiz-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+
+        <div class="logo">
+            Study<span>AI</span>
+        </div>
+
+        <div class="header-actions">
+
+            <span>
+            Adaptive Personal Learning Coach
+        </span>
+
+            <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+
+            🌙
+
+        </button>
+
+        </div>
+
+    </header>
+
+
+    <div class="container">
+
+
+        <!-- ======================================================
+     HERO
+====================================================== -->
+
+        <section class="hero">
+
+            <h1>
+                Your
+                <span class="gradient">
+            Adaptive
+        </span>
+                <br> Study Command Center.
+            </h1>
+
+            <p>
+                StudyAI analyzes your answers, identifies weak topics, changes question difficulty and creates a personalized learning experience.
+            </p>
+
+        </section>
+
+
+        <!-- ======================================================
+     SETUP
+====================================================== -->
+
+        <section id="setup">
+
+            <div class="grid">
+
+
+                <div class="card">
+
+                    <h2>
+                        🎓 Build Your Learning Profile
+                    </h2>
+
+
+                    <label>
+        Your name
+    </label>
+
+                    <input id="studentName" placeholder="Enter your name">
+
+
+                    <label>
+        Subject
+    </label>
+
+                    <select id="subject">
+
+        <option>
+            Mathematics
+        </option>
+
+        <option>
+            Physics
+        </option>
+
+        <option>
+            Chemistry
+        </option>
+
+        <option>
+            Biology
+        </option>
+
+        <option>
+            Computer Science
+        </option>
+
+        <option>
+            English
+        </option>
+
+    </select>
+
+
+                    <label>
+        Exam date
+    </label>
+
+                    <input type="date" id="examDate">
+
+
+                    <label>
+        Daily study hours
+    </label>
+
+                    <input type="number" id="hours" min="1" max="12" value="2">
+
+
+                    <label>
+        Current level
+    </label>
+
+                    <select id="level">
+
+        <option>
+            Beginner
+        </option>
+
+        <option>
+            Intermediate
+        </option>
+
+        <option>
+            Advanced
+        </option>
+
+        <option>
+            Expert
+        </option>
+
+    </select>
+
+
+                    <button class="full" onclick="createProfile()">
+
+        Generate My Learning System →
+
+    </button>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h2>
+                        🚀 Adaptive Features
+                    </h2>
+
+
+                    <div class="plan">
+
+                        <strong>
+            🧠 Adaptive Difficulty
+        </strong>
+
+                        <p>
+                            The system changes difficulty based on your performance.
+                        </p>
+
+                    </div>
+
+
+                    <div class="plan">
+
+                        <strong>
+            🎲 Random Questions
+        </strong>
+
+                        <p>
+                            Questions are selected and generated differently for every quiz.
+                        </p>
+
+                    </div>
+
+
+                    <div class="plan">
+
+                        <strong>
+            🔀 Random Answers
+        </strong>
+
+                        <p>
+                            Answer choices are shuffled so students cannot memorize answer positions.
+                        </p>
+
+                    </div>
+
+
+                    <div class="plan">
+
+                        <strong>
+            📊 Performance Analysis
+        </strong>
+
+                        <p>
+                            Topic accuracy is calculated after every question.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================================
+     DASHBOARD
+====================================================== -->
+
+        <section class="dashboard" id="dashboard">
+
+
+            <div class="card">
+
+                <h2 id="welcome"></h2>
+
+
+                <div class="stats">
+
+
+                    <div class="stat">
+
+                        <div class="number" id="score">
+
+                            0%
+
+                        </div>
+
+                        <small>
+                Accuracy
+            </small>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="number" id="questionsDone">
+
+                            0
+
+                        </div>
+
+                        <small>
+                Questions solved
+            </small>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="number" id="streak">
+
+                            0
+
+                        </div>
+
+                        <small>
+                Day streak
+            </small>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="number" id="difficulty">
+
+                            Easy
+
+                        </div>
+
+                        <small>
+                Current level
+            </small>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="number" id="days">
+
+                            0
+
+                        </div>
+
+                        <small>
+                Days remaining
+            </small>
+
+                    </div>
+
+
+                </div>
+
+
+                <br>
+
+
+                <h3>
+                    Overall Learning Progress
+                </h3>
+
+
+                <div class="progress">
+
+                    <div class="progress-bar" id="progressBar">
+
+                    </div>
+
+                </div>
+
+
+                <p id="progressText" style="color:var(--muted)">
+
+                </p>
+
+            </div>
+
+
+            <div class="grid" style="margin-top:20px">
+
+
+                <!-- STUDY PLAN -->
+
+                <div class="card">
+
+                    <h2>
+                        📅 Today's Smart Plan
+                    </h2>
+
+                    <div id="studyPlan"></div>
+
+                </div>
+
+
+                <!-- AI RECOMMENDATION -->
+
+                <div class="card">
+
+                    <h2>
+                        🤖 AI Recommendation
+                    </h2>
+
+
+                    <div class="recommendation" id="recommendation">
+
+                        Complete a quiz to receive personalized recommendations.
+
+                    </div>
+
+
+                    <button class="full" onclick="startQuiz()">
+
+        🧠 Start Adaptive Quiz
+
+    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ANALYTICS -->
+
+            <div class="grid" style="margin-top:20px">
+
+
+                <div class="card">
+
+                    <h2>
+                        📚 Topic Mastery
+                    </h2>
+
+                    <div id="topicStats" class="topic-grid">
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h2>
+                        📈 Recent Performance
+                    </h2>
+
+                    <div id="history">
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="card" style="margin-top:20px">
+
+                <button class="secondary" onclick="resetData()">
+
+        Reset All Data
+
+    </button>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ======================================================
+     QUIZ
+====================================================== -->
+
+        <section class="quiz" id="quiz">
+
+
+            <div class="card">
+
+
+                <div class="quiz-top">
+
+
+                    <div>
+
+                        <span class="badge" id="difficultyBadge">
+
+        Difficulty
+
+    </span>
+
+
+                        <span class="badge" id="topicBadge">
+
+        Topic
+
+    </span>
+
+                    </div>
+
+
+                    <div class="timer">
+
+                        ⏱
+                        <span id="quizTimer">
+        45
+    </span> s
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="progress">
+
+                    <div class="progress-bar" id="quizProgress">
+
+                    </div>
+
+                </div>
+
+
+                <div class="question" id="question">
+
+                </div>
+
+
+                <div class="answers" id="answers">
+
+                </div>
+
+
+                <div id="result" class="result">
+
+                </div>
+
+
+                <div class="quiz-footer">
+
+
+                    <button class="secondary" onclick="quitQuiz()">
+
+    Exit Quiz
+
+</button>
+
+
+                    <button id="nextBtn" class="hidden" onclick="nextQuestion()">
+
+    Next →
+
+</button>
+
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+    <div class="toast" id="toast">
+
+    </div>
+
+
+    <script>
+        /* =========================================================
+           QUESTION BANK
+        ========================================================= */
+
+        const questionBank = {
+
+
+            /* =====================================================
+               MATHEMATICS
+            ===================================================== */
+
+            Mathematics: [
+
+                {
+                    q: "If 3x² - 18x + 5 = 0 has roots α and β, what is α + β?",
+
+                    a: [
+                        "6",
+                        "3",
+                        "-6",
+                        "5"
+                    ],
+
+                    c: 0,
+
+                    topic: "Algebra",
+
+                    difficulty: "Hard",
+
+                    explanation: "For ax² + bx + c = 0, the sum of roots is -b/a. Therefore 18/3 = 6."
+                },
+
+
+                {
+                    q: "Differentiate y = x³ ln(x).",
+
+                    a: [
+                        "3x²ln(x) + x²",
+                        "x³/x",
+                        "3x²",
+                        "x³ln(x)"
+                    ],
+
+                    c: 0,
+
+                    topic: "Calculus",
+
+                    difficulty: "Expert",
+
+                    explanation: "Using the product rule: y' = 3x²ln(x) + x³(1/x) = 3x²ln(x)+x²."
+                },
+
+
+                {
+                    q: "Evaluate ∫(6x² - 4x + 3) dx.",
+
+                    a: [
+                        "2x³ - 2x² + 3x + C",
+                        "6x³ - 4x² + 3x + C",
+                        "2x³ - 4x² + 3 + C",
+                        "3x² - 2x + C"
+                    ],
+
+                    c: 0,
+
+                    topic: "Calculus",
+
+                    difficulty: "Expert",
+
+                    explanation: "Integrating term by term gives 2x³ - 2x² + 3x + C."
+                },
+
+
+                {
+                    q: "A sequence has first term 5 and common difference 7. What is the 15th term?",
+
+                    a: [
+                        "103",
+                        "98",
+                        "105",
+                        "110"
+                    ],
+
+                    c: 0,
+
+                    topic: "Sequences",
+
+                    difficulty: "Hard",
+
+                    explanation: "Using an = a1 + (n-1)d, we get 5 + 14(7) = 103."
+                },
+
+
+                {
+                    q: "If f(x)=x²-4x+7, what is f(9)?",
+
+                    a: [
+                        "52",
+                        "34",
+                        "46",
+                        "88"
+                    ],
+
+                    c: 1,
+
+                    topic: "Functions",
+
+                    difficulty: "Hard",
+
+                    explanation: "f(9)=9²-4(9)+7 = 81-36+7 = 52."
+                },
+
+
+                {
+                    q: "What is the probability of getting exactly two heads when three fair coins are tossed?",
+
+                    a: [
+                        "1/8",
+                        "3/8",
+                        "1/2",
+                        "5/8"
+                    ],
+
+                    c: 1,
+
+                    topic: "Probability",
+
+                    difficulty: "Hard",
+
+                    explanation: "There are 3 favorable arrangements out of 8 possible outcomes."
+                }
+
+            ],
+
+
+            /* =====================================================
+               PHYSICS
+            ===================================================== */
+
+            Physics: [
+
+                {
+                    q: "A body initially at rest accelerates at 4 m/s² for 6 seconds. What distance does it travel?",
+
+                    a: [
+                        "48 m",
+                        "72 m",
+                        "96 m",
+                        "144 m"
+                    ],
+
+                    c: 1,
+
+                    topic: "Kinematics",
+
+                    difficulty: "Hard",
+
+                    explanation: "Using s = ut + 1/2at², s = 0 + 1/2(4)(36) = 72 m."
+                },
+
+
+                {
+                    q: "A 5 kg object experiences a net force of 30 N. What is its acceleration?",
+
+                    a: [
+                        "5 m/s²",
+                        "6 m/s²",
+                        "10 m/s²",
+                        "25 m/s²"
+                    ],
+
+                    c: 1,
+
+                    topic: "Mechanics",
+
+                    difficulty: "Hard",
+
+                    explanation: "Newton's second law gives F = ma, therefore a = 30/5 = 6 m/s²."
+                },
+
+
+                {
+                    q: "Which quantities are conserved in an isolated elastic collision?",
+
+                    a: [
+                        "Momentum only",
+                        "Kinetic energy only",
+                        "Both momentum and kinetic energy",
+                        "Neither"
+                    ],
+
+                    c: 2,
+
+                    topic: "Collisions",
+
+                    difficulty: "Expert",
+
+                    explanation: "Elastic collisions conserve both total momentum and total kinetic energy."
+                },
+
+
+                {
+                    q: "If resistance is doubled while voltage remains constant, current becomes:",
+
+                    a: [
+                        "Double",
+                        "Half",
+                        "Four times",
+                        "Unchanged"
+                    ],
+
+                    c: 1,
+
+                    topic: "Electricity",
+
+                    difficulty: "Hard",
+
+                    explanation: "From Ohm's law V = IR, I = V/R. Doubling resistance halves current."
+                },
+
+
+                {
+                    q: "A projectile reaches maximum height when its vertical velocity is:",
+
+                    a: [
+                        "Maximum",
+                        "Zero",
+                        "Equal to g",
+                        "Negative maximum"
+                    ],
+
+                    c: 1,
+
+                    topic: "Projectile Motion",
+
+                    difficulty: "Hard",
+
+                    explanation: "At maximum height, vertical velocity becomes momentarily zero."
+                }
+
+            ],
+
+
+            /* =====================================================
+               CHEMISTRY
+            ===================================================== */
+
+            Chemistry: [
+
+                {
+                    q: "Which principle states that equilibrium shifts to oppose an applied change?",
+
+                    a: [
+                        "Avogadro's law",
+                        "Le Chatelier's principle",
+                        "Boyle's law",
+                        "Hess's law"
+                    ],
+
+                    c: 1,
+
+                    topic: "Equilibrium",
+
+                    difficulty: "Hard",
+
+                    explanation: "Le Chatelier's principle explains how equilibrium responds to disturbances."
+                },
+
+
+                {
+                    q: "What happens to reaction rate when temperature generally increases?",
+
+                    a: [
+                        "It decreases",
+                        "It remains constant",
+                        "It generally increases",
+                        "It becomes zero"
+                    ],
+
+                    c: 2,
+
+                    topic: "Chemical Kinetics",
+
+                    difficulty: "Hard",
+
+                    explanation: "Higher temperature generally increases the number of particles with sufficient activation energy."
+                },
+
+
+                {
+                    q: "Which quantum number determines the shape of an orbital?",
+
+                    a: [
+                        "Principal quantum number",
+                        "Azimuthal quantum number",
+                        "Magnetic quantum number",
+                        "Spin quantum number"
+                    ],
+
+                    c: 1,
+
+                    topic: "Atomic Structure",
+
+                    difficulty: "Expert",
+
+                    explanation: "The azimuthal quantum number l determines the shape of an orbital."
+                },
+
+
+                {
+                    q: "A solution with pH 3 has how many times greater H+ concentration than a solution with pH 5?",
+
+                    a: [
+                        "2",
+                        "10",
+                        "100",
+                        "1000"
+                    ],
+
+                    c: 2,
+
+                    topic: "Acids and Bases",
+
+                    difficulty: "Expert",
+
+                    explanation: "A two-unit pH difference represents a 10² = 100-fold concentration difference."
+                }
+
+            ],
+
+
+            /* =====================================================
+               BIOLOGY
+            ===================================================== */
+
+            Biology: [
+
+                {
+                    q: "During which stage of mitosis do chromosomes align at the cell's equator?",
+
+                    a: [
+                        "Prophase",
+                        "Metaphase",
+                        "Anaphase",
+                        "Telophase"
+                    ],
+
+                    c: 1,
+
+                    topic: "Cell Division",
+
+                    difficulty: "Hard",
+
+                    explanation: "Chromosomes align at the metaphase plate during metaphase."
+                },
+
+
+                {
+                    q: "Which molecule carries genetic instructions from DNA to ribosomes?",
+
+                    a: [
+                        "tRNA",
+                        "mRNA",
+                        "ATP",
+                        "rRNA"
+                    ],
+
+                    c: 1,
+
+                    topic: "Genetics",
+
+                    difficulty: "Hard",
+
+                    explanation: "Messenger RNA carries genetic information from DNA to ribosomes."
+                },
+
+
+                {
+                    q: "Natural selection acts directly on:",
+
+                    a: [
+                        "Phenotypes",
+                        "DNA molecules only",
+                        "Allele frequencies directly",
+                        "Entire ecosystems"
+                    ],
+
+                    c: 0,
+
+                    topic: "Evolution",
+
+                    difficulty: "Expert",
+
+                    explanation: "Natural selection acts on expressed traits, while allele frequencies change as a consequence."
+                }
+
+            ],
+
+
+            /* =====================================================
+               COMPUTER SCIENCE
+            ===================================================== */
+
+            "Computer Science": [
+
+                {
+                    q: "What is the average time complexity of hash table lookup under good hashing?",
+
+                    a: [
+                        "O(n)",
+                        "O(log n)",
+                        "O(1)",
+                        "O(n²)"
+                    ],
+
+                    c: 2,
+
+                    topic: "Data Structures",
+
+                    difficulty: "Hard",
+
+                    explanation: "Under typical assumptions, hash table lookup has average-case O(1) complexity."
+                },
+
+
+                {
+                    q: "What is the time complexity of merge sort?",
+
+                    a: [
+                        "O(n)",
+                        "O(log n)",
+                        "O(n log n)",
+                        "O(n²)"
+                    ],
+
+                    c: 2,
+
+                    topic: "Algorithms",
+
+                    difficulty: "Hard",
+
+                    explanation: "Merge sort divides the array recursively and performs O(n) merging at each level."
+                },
+
+
+                {
+                    q: "Which data structure is normally used for breadth-first search?",
+
+                    a: [
+                        "Stack",
+                        "Queue",
+                        "Heap",
+                        "Hash table"
+                    ],
+
+                    c: 1,
+
+                    topic: "Graph Algorithms",
+
+                    difficulty: "Hard",
+
+                    explanation: "BFS explores nodes level by level using a queue."
+                },
+
+
+                {
+                    q: "Which traversal of a binary search tree produces sorted order?",
+
+                    a: [
+                        "Preorder",
+                        "Postorder",
+                        "Inorder",
+                        "Level order"
+                    ],
+
+                    c: 2,
+
+                    topic: "Trees",
+
+                    difficulty: "Hard",
+
+                    explanation: "Inorder traversal visits left subtree, root, then right subtree."
+                },
+
+
+                {
+                    q: "What does database normalization primarily reduce?",
+
+                    a: [
+                        "CPU usage",
+                        "Data redundancy",
+                        "Network speed",
+                        "Encryption strength"
+                    ],
+
+                    c: 1,
+
+                    topic: "Databases",
+
+                    difficulty: "Expert",
+
+                    explanation: "Normalization reduces redundant data and helps prevent update anomalies."
+                }
+
+            ],
+
+
+            /* =====================================================
+               ENGLISH
+            ===================================================== */
+
+            English: [
+
+                {
+                    q: "Which sentence uses the subjunctive mood correctly?",
+
+                    a: [
+                        "If I was you, I would study.",
+                        "If I were you, I would study.",
+                        "If I am you, I studied.",
+                        "If I be you, I study."
+                    ],
+
+                    c: 1,
+
+                    topic: "Advanced Grammar",
+
+                    difficulty: "Hard",
+
+                    explanation: "The traditional subjunctive form 'were' is used for hypothetical situations."
+                },
+
+
+                {
+                    q: "Which word is closest in meaning to 'equivocal'?",
+
+                    a: [
+                        "Certain",
+                        "Ambiguous",
+                        "Transparent",
+                        "Obvious"
+                    ],
+
+                    c: 1,
+
+                    topic: "Vocabulary",
+
+                    difficulty: "Expert",
+
+                    explanation: "Equivocal means open to multiple interpretations or unclear."
+                },
+
+
+                {
+                    q: "Which rhetorical device involves deliberate exaggeration?",
+
+                    a: [
+                        "Irony",
+                        "Hyperbole",
+                        "Alliteration",
+                        "Metonymy"
+                    ],
+
+                    c: 1,
+
+                    topic: "Literary Devices",
+
+                    difficulty: "Hard",
+
+                    explanation: "Hyperbole is deliberate and usually obvious exaggeration."
+                }
+
+            ]
+
+        };
+
+
+        /* =========================================================
+           APPLICATION STATE
+        ========================================================= */
+
+        let state = {
+
+            profile: null,
+
+            currentQuestion: 0,
+
+            questions: [],
+
+            score: 0,
+
+            answered: false,
+
+            quizHistory: [],
+
+            topicStats: {},
+
+            streak: 0,
+
+            lastStudyDate: null
+
+        };
+
+
+        let timerInterval;
+
+
+        /* =========================================================
+           STORAGE
+        ========================================================= */
+
+        function saveState() {
+
+            localStorage.setItem(
+                "studyAIAdvanced",
+                JSON.stringify(state)
+            );
+
+        }
+
+
+        function loadState() {
+
+            const saved =
+                localStorage.getItem(
+                    "studyAIAdvanced"
+                );
+
+            if (saved) {
+
+                state =
+                    JSON.parse(saved);
+
+                restoreProfile();
+
+                renderDashboard();
+
+            }
+
+        }
+
+
+        function restoreProfile() {
+
+            if (!state.profile)
+                return;
+
+            document.getElementById(
+                    "studentName"
+                ).value =
+                state.profile.name;
+
+            document.getElementById(
+                    "subject"
+                ).value =
+                state.profile.subject;
+
+            document.getElementById(
+                    "examDate"
+                ).value =
+                state.profile.exam;
+
+            document.getElementById(
+                    "hours"
+                ).value =
+                state.profile.hours;
+
+            document.getElementById(
+                    "level"
+                ).value =
+                state.profile.level;
+
+        }
+
+
+        /* =========================================================
+           PROFILE CREATION
+        ========================================================= */
+
+        function createProfile() {
+
+            const name =
+                document
+                .getElementById("studentName")
+                .value
+                .trim() || "Student";
+
+            const subject =
+                document
+                .getElementById("subject")
+                .value;
+
+            const exam =
+                document
+                .getElementById("examDate")
+                .value;
+
+            const hours =
+                Number(
+                    document
+                    .getElementById("hours")
+                    .value
+                );
+
+            const level =
+                document
+                .getElementById("level")
+                .value;
+
+
+            if (!exam) {
+
+                showToast(
+                    "Please select your exam date."
+                );
+
+                return;
+            }
+
+
+            state.profile = {
+
+                name,
+                subject,
+                exam,
+                hours,
+                level
+
+            };
+
+
+            updateStreak();
+
+            saveState();
+
+            renderDashboard();
+
+            showToast(
+                "Your adaptive learning system is ready!"
+            );
+
+
+            document
+                .getElementById("dashboard")
+                .scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+
+
+        /* =========================================================
+           DAYS REMAINING
+        ========================================================= */
+
+        function getDaysRemaining() {
+
+            const today =
+                new Date();
+
+            const exam =
+                new Date(
+                    state.profile.exam
+                );
+
+
+            today.setHours(
+                0, 0, 0, 0
+            );
+
+            exam.setHours(
+                0, 0, 0, 0
+            );
+
+
+            return Math.max(
+                0,
+                Math.ceil(
+                    (exam - today) /
+                    (1000 * 60 * 60 * 24)
+                )
+            );
+
+        }
+
+
+        /* =========================================================
+           ACCURACY
+        ========================================================= */
+
+        function calculateAccuracy() {
+
+            if (!state.quizHistory.length)
+                return 0;
+
+
+            let totalQuestions = 0;
+
+            let totalCorrect = 0;
+
+
+            state.quizHistory.forEach(
+                history => {
+
+                    totalQuestions +=
+                        history.total;
+
+                    totalCorrect +=
+                        history.correct;
+
+                }
+            );
+
+
+            return Math.round(
+                (
+                    totalCorrect /
+                    totalQuestions
+                ) * 100
+            );
+
+        }
+
+
+        /* =========================================================
+           CURRENT DIFFICULTY
+        ========================================================= */
+
+        function getCurrentDifficulty() {
+
+            const accuracy =
+                calculateAccuracy();
+
+
+            if (accuracy >= 90)
+                return "Expert";
+
+            if (accuracy >= 75)
+                return "Hard";
+
+            if (accuracy >= 55)
+                return "Medium";
+
+            return "Easy";
+
+        }
+
+
+        /* =========================================================
+           DASHBOARD
+        ========================================================= */
+
+        function renderDashboard() {
+
+            if (!state.profile)
+                return;
+
+
+            document
+                .getElementById("dashboard")
+                .style.display =
+                "block";
+
+
+            const accuracy =
+                calculateAccuracy();
+
+
+            document
+                .getElementById("welcome")
+                .innerText =
+                `Welcome back, ${state.profile.name}! 👋`;
+
+
+            document
+                .getElementById("days")
+                .innerText =
+                getDaysRemaining();
+
+
+            document
+                .getElementById("score")
+                .innerText =
+                accuracy + "%";
+
+
+            const totalQuestions =
+                state.quizHistory.reduce(
+                    (sum, h) =>
+                    sum + h.total,
+                    0
+                );
+
+
+            document
+                .getElementById("questionsDone")
+                .innerText =
+                totalQuestions;
+
+
+            document
+                .getElementById("streak")
+                .innerText =
+                state.streak;
+
+
+            document
+                .getElementById("difficulty")
+                .innerText =
+                getCurrentDifficulty();
+
+
+            document
+                .getElementById("progressBar")
+                .style.width =
+                Math.max(
+                    5,
+                    accuracy
+                ) + "%";
+
+
+            document
+                .getElementById("progressText")
+                .innerText =
+
+                accuracy === 0
+
+                ?
+
+                "Take your first quiz to measure your current ability."
+
+            :
+
+            `Your current measured accuracy is ${accuracy}%.`;
+
+
+            generateStudyPlan();
+
+            generateRecommendation();
+
+            renderTopics();
+
+            renderHistory();
+
+        }
+
+
+        /* =========================================================
+           STUDY PLAN
+        ========================================================= */
+
+        function generateStudyPlan() {
+
+            const hours =
+                state.profile.hours;
+
+
+            const accuracy =
+                calculateAccuracy();
+
+
+            let concept =
+                hours * .35;
+
+            let practice =
+                hours * .45;
+
+            let revision =
+                hours * .20;
+
+
+            if (accuracy < 50) {
+
+                concept =
+                    hours * .50;
+
+                practice =
+                    hours * .35;
+
+                revision =
+                    hours * .15;
+
+            } else if (accuracy >= 85) {
+
+                concept =
+                    hours * .20;
+
+                practice =
+                    hours * .60;
+
+                revision =
+                    hours * .20;
+
+            }
+
+
+            document
+                .getElementById("studyPlan")
+                .innerHTML = `
+
+        <div class="plan">
+
+            <strong>
+                📖 Concept Learning
+            </strong>
+
+            <p>
+                ${formatHours(concept)}
+                learning important concepts.
+            </p>
+
+        </div>
+
+
+        <div class="plan">
+
+            <strong>
+                🧠 Difficult Practice
+            </strong>
+
+            <p>
+                ${formatHours(practice)}
+                solving challenging questions.
+            </p>
+
+        </div>
+
+
+        <div class="plan">
+
+            <strong>
+                🔄 Revision
+            </strong>
+
+            <p>
+                ${formatHours(revision)}
+                reviewing mistakes.
+            </p>
+
+        </div>
+
+    `;
+
+        }
+
+
+        function formatHours(value) {
+
+            if (value < 1)
+                return Math.round(value * 60) +
+                    " minutes";
+
+            return value.toFixed(1) +
+                " hours";
+
+        }
+
+
+        /* =========================================================
+           AI RECOMMENDATION
+        ========================================================= */
+
+        function generateRecommendation() {
+
+            const accuracy =
+                calculateAccuracy();
+
+
+            const weakTopics =
+                getWeakTopics();
+
+
+            let message;
+
+
+            if (!state.quizHistory.length) {
+
+                message =
+                    "Take your first adaptive quiz so StudyAI can measure your current ability.";
+
+            } else if (weakTopics.length) {
+
+                message =
+                    `Focus on ${weakTopics.slice(0,3).join(", ")}. ` +
+                    `These topics currently have lower accuracy.`;
+
+            } else if (accuracy >= 90) {
+
+                message =
+                    "Excellent performance. The system will increase Expert-level questions.";
+
+            } else {
+
+                message =
+                    "Keep practicing. The system will automatically adjust difficulty.";
+
+            }
+
+
+            document
+                .getElementById("recommendation")
+                .innerText =
+                message;
+
+        }
+
+
+        /* =========================================================
+           WEAK TOPICS
+        ========================================================= */
+
+        function getWeakTopics() {
+
+            return Object
+                .entries(
+                    state.topicStats
+                )
+
+            .filter(
+                ([topic, data]) =>
+                data.total >= 1
+            )
+
+            .sort(
+                (a, b) =>
+                (
+                    a[1].correct /
+                    a[1].total
+                ) -
+                (
+                    b[1].correct /
+                    b[1].total
+                )
+            )
+
+            .map(
+                ([topic]) =>
+                topic
+            );
+
+        }
+
+
+        /* =========================================================
+           TOPIC DISPLAY
+        ========================================================= */
+
+        function renderTopics() {
+
+            const container =
+                document
+                .getElementById(
+                    "topicStats"
+                );
+
+
+            const entries =
+                Object.entries(
+                    state.topicStats
+                );
+
+
+            if (!entries.length) {
+
+                container.innerHTML =
+                    `
+            <p style="color:var(--muted)">
+                No topic data yet.
+            </p>
+            `;
+
+                return;
+            }
+
+
+            container.innerHTML =
+                entries.map(
+                    ([topic, data]) => {
+
+                        const percentage =
+                            Math.round(
+                                data.correct /
+                                data.total *
+                                100
+                            );
+
+
+                        return `
+
+                <div class="topic">
+
+                    <div class="topic-header">
+
+                        <strong>
+                            ${topic}
+                        </strong>
+
+                        <span>
+                            ${percentage}%
+                        </span>
+
+                    </div>
+
+
+                    <div class="mini-progress">
+
+                        <div
+                            style="
+                            width:${percentage}%
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                `;
+
+                    }
+                ).join("");
+
+        }
+
+
+        /* =========================================================
+           HISTORY
+        ========================================================= */
+
+        function renderHistory() {
+
+            const container =
+                document
+                .getElementById(
+                    "history"
+                );
+
+
+            if (!state.quizHistory.length) {
+
+                container.innerHTML =
+                    `
+            <p style="color:var(--muted)">
+                No quizzes completed yet.
+            </p>
+            `;
+
+                return;
+            }
+
+
+            container.innerHTML =
+                state.quizHistory
+                .slice(-8)
+                .reverse()
+                .map(
+                    history => {
+
+                        const percentage =
+                            Math.round(
+                                history.correct /
+                                history.total *
+                                100
+                            );
+
+
+                        let cls =
+                            percentage >= 80 ?
+                            "good" :
+                            percentage >= 60 ?
+                            "medium" :
+                            "bad";
+
+
+                        return `
+
+                <div class="history-item">
+
+                    <span>
+                        ${history.subject}
+                    </span>
+
+                    <strong
+                        class="${cls}">
+
+                        ${percentage}%
+
+                    </strong>
+
+                </div>
+
+                `;
+
+                    }
+                ).join("");
+
+        }
+
+
+        /* =========================================================
+           RANDOM SHUFFLE
+        ========================================================= */
+
+        function shuffle(array) {
+
+            const copy = [...array];
+
+
+            for (
+                let i = copy.length - 1; i > 0; i--
+            ) {
+
+                const j =
+                    Math.floor(
+                        Math.random() *
+                        (i + 1)
+                    );
+
+
+                [
+                    copy[i],
+                    copy[j]
+                ] = [
+                    copy[j],
+                    copy[i]
+                ];
+
+            }
+
+
+            return copy;
+
+        }
+
+
+        /* =========================================================
+           CHOOSE ADAPTIVE QUESTIONS
+        ========================================================= */
+
+        function chooseAdaptiveQuestions(bank) {
+
+            const weak =
+                getWeakTopics();
+
+
+            let questions = [...bank];
+
+
+            /*
+               Put weak-topic questions first.
+            */
+
+            questions.sort(
+                (a, b) => {
+
+                    const aWeak =
+                        weak.includes(
+                            a.topic
+                        );
+
+                    const bWeak =
+                        weak.includes(
+                            b.topic
+                        );
+
+
+                    return (
+                        Number(bWeak) -
+                        Number(aWeak)
+                    );
+
+                }
+            );
+
+
+            /*
+               Shuffle within the selected pool.
+            */
+
+            questions =
+                shuffle(questions);
+
+
+            const accuracy =
+                calculateAccuracy();
+
+
+            let selected;
+
+
+            /*
+               High performance
+               → more Expert questions.
+            */
+
+            if (accuracy >= 90) {
+
+                selected =
+                    questions.filter(
+                        q =>
+                        q.difficulty ===
+                        "Expert"
+                    );
+
+            }
+
+
+            /*
+               Good performance
+               → Hard + Expert.
+            */
+            else if (accuracy >= 70) {
+
+                selected =
+                    questions.filter(
+                        q =>
+                        q.difficulty ===
+                        "Hard" ||
+                        q.difficulty ===
+                        "Expert"
+                    );
+
+            }
+
+
+            /*
+               Lower performance
+               → Easy + Medium + Hard.
+            */
+            else {
+
+                selected =
+                    questions.filter(
+                        q =>
+                        q.difficulty !==
+                        "Expert"
+                    );
+
+            }
+
+
+            /*
+               If there aren't enough
+               questions, use the complete bank.
+            */
+
+            if (selected.length < 5) {
+
+                selected =
+                    questions;
+
+            }
+
+
+            return shuffle(
+                selected
+            ).slice(
+                0,
+                Math.min(
+                    8,
+                    selected.length
+                )
+            );
+
+        }
+
+
+        /* =========================================================
+           START QUIZ
+        ========================================================= */
+
+        function startQuiz() {
+
+            if (!state.profile) {
+
+                showToast(
+                    "Create your profile first."
+                );
+
+                return;
+            }
+
+
+            const bank =
+                questionBank[
+                    state.profile.subject
+                ];
+
+
+            if (!bank) {
+
+                showToast(
+                    "Question bank unavailable."
+                );
+
+                return;
+            }
+
+
+            state.questions =
+                chooseAdaptiveQuestions(
+                    bank
+                );
+
+
+            state.currentQuestion = 0;
+
+            state.score = 0;
+
+            state.answered = false;
+
+
+            document
+                .getElementById("quiz")
+                .style.display =
+                "block";
+
+
+            showQuestion();
+
+
+            document
+                .getElementById("quiz")
+                .scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+
+
+        /* =========================================================
+           SHOW QUESTION
+        ========================================================= */
+
+        function showQuestion() {
+
+            clearInterval(
+                timerInterval
+            );
+
+
+            state.answered =
+                false;
+
+
+            const q =
+                state.questions[
+                    state.currentQuestion
+                ];
+
+
+            if (!q) {
+
+                finishQuiz();
+
+                return;
+            }
+
+
+            document
+                .getElementById(
+                    "question"
+                )
+                .innerText =
+                `${state.currentQuestion + 1}. ${q.q}`;
+
+
+            document
+                .getElementById(
+                    "difficultyBadge"
+                )
+                .innerText =
+                "Difficulty: " +
+                q.difficulty;
+
+
+            document
+                .getElementById(
+                    "topicBadge"
+                )
+                .innerText =
+                q.topic;
+
+
+            const progress =
+                (
+                    state.currentQuestion /
+                    state.questions.length
+                ) *
+                100;
+
+
+            document
+                .getElementById(
+                    "quizProgress"
+                )
+                .style.width =
+                progress + "%";
+
+
+            /*
+               IMPORTANT:
+               Store the correct answer text
+               before shuffling.
+            */
+
+            const correctAnswer =
+                q.a[q.c];
+
+
+            /*
+               Shuffle answer choices.
+            */
+
+            const shuffledAnswers =
+                shuffle(q.a);
+
+
+            /*
+               Find where the correct answer
+               moved after shuffling.
+            */
+
+            q.correctIndex =
+                shuffledAnswers.indexOf(
+                    correctAnswer
+                );
+
+
+            const answers =
+                document
+                .getElementById(
+                    "answers"
+                );
+
+
+            answers.innerHTML = "";
+
+
+            shuffledAnswers.forEach(
+                (answer, index) => {
+
+                    const button =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    button.className =
+                        "answer";
+
+
+                    button.innerText =
+                        answer;
+
+
+                    /*
+                       When clicked, send
+                       the selected index.
+                    */
+
+                    button.onclick =
+                        () =>
+                        checkAnswer(index);
+
+
+                    answers.appendChild(
+                        button
+                    );
+
+                }
+            );
+
+
+            const result =
+                document
+                .getElementById(
+                    "result"
+                );
+
+
+            result.style.display =
+                "none";
+
+
+            result.innerHTML =
+                "";
+
+
+            document
+                .getElementById(
+                    "nextBtn"
+                )
+                .classList.add(
+                    "hidden"
+                );
+
+
+            startQuestionTimer();
+
+        }
+
+
+        /* =========================================================
+           QUESTION TIMER
+        ========================================================= */
+
+        function startQuestionTimer() {
+
+            let seconds = 45;
+
+
+            document
+                .getElementById(
+                    "quizTimer"
+                )
+                .innerText =
+                seconds;
+
+
+            timerInterval =
+                setInterval(
+                    () => {
+
+                        seconds--;
+
+
+                        document
+                            .getElementById(
+                                "quizTimer"
+                            )
+                            .innerText =
+                            seconds;
+
+
+                        if (seconds <= 0) {
+
+                            clearInterval(
+                                timerInterval
+                            );
+
+
+                            /*
+                               -1 means
+                               time expired.
+                            */
+
+                            checkAnswer(-1);
+
+                        }
+
+                    },
+                    1000
+                );
+
+        }
+
+
+        /* =========================================================
+           ANSWER CHECKING METHOD
+        ========================================================= */
+
+        function checkAnswer(selected) {
+
+            /*
+               Prevent answering twice.
+            */
+
+            if (state.answered)
+                return;
+
+
+            state.answered =
+                true;
+
+
+            clearInterval(
+                timerInterval
+            );
+
+
+            /*
+               Get current question.
+            */
+
+            const q =
+                state.questions[
+                    state.currentQuestion
+                ];
+
+
+            /*
+               Get all answer buttons.
+            */
+
+            const buttons =
+                document.querySelectorAll(
+                    ".answer"
+                );
+
+
+            /*
+               Disable all buttons.
+            */
+
+            buttons.forEach(
+                button => {
+
+                    button.disabled =
+                        true;
+
+                }
+            );
+
+
+            /*
+               COMPARE THE ANSWERS
+            */
+
+            const isCorrect =
+                selected ===
+                q.correctIndex;
+
+
+            /*
+               Create topic record
+               if it doesn't exist.
+            */
+
+            if (!state.topicStats[q.topic]) {
+
+                state.topicStats[q.topic] = {
+
+                    correct: 0,
+
+                    total: 0
+
+                };
+
+            }
+
+
+            /*
+               Every attempted question
+               increases total.
+            */
+
+            state.topicStats[
+                q.topic
+            ].total++;
+
+
+            /*
+               CORRECT ANSWER
+            */
+
+            if (isCorrect) {
+
+                /*
+                   Increase quiz score.
+                */
+
+                state.score++;
+
+
+                /*
+                   Increase topic score.
+                */
+
+                state.topicStats[
+                    q.topic
+                ].correct++;
+
+
+                /*
+                   Highlight correct button.
+                */
+
+                buttons[
+                    selected
+                ].classList.add(
+                    "correct"
+                );
+
+
+            }
+
+
+            /*
+               WRONG ANSWER
+            */
+            else {
+
+                /*
+                   Highlight student's
+                   selected answer.
+                */
+
+                if (selected >= 0) {
+
+                    buttons[
+                        selected
+                    ].classList.add(
+                        "wrong"
+                    );
+
+                }
+
+
+                /*
+                   Highlight the actual
+                   correct answer.
+                */
+
+                buttons[
+                    q.correctIndex
+                ].classList.add(
+                    "correct"
+                );
+
+            }
+
+
+            /*
+               Display result.
+            */
+
+            const result =
+                document
+                .getElementById(
+                    "result"
+                );
+
+
+            result.style.display =
+                "block";
+
+
+            result.className =
+                isCorrect ?
+                "result correct" :
+                "result wrong";
+
+
+            result.innerHTML =
+
+                isCorrect ?
+
+                "✓ Correct!"
+
+            :
+
+            selected === -1 ?
+                "⏰ Time's up!" :
+                "✗ Incorrect.";
+
+
+            /*
+               Display explanation.
+            */
+
+            result.innerHTML += `
+
+        <div class="explanation">
+
+            <strong>
+                Explanation:
+            </strong>
+
+            ${q.explanation}
+
+        </div>
+
+    `;
+
+
+            /*
+               Show Next button.
+            */
+
+            document
+                .getElementById(
+                    "nextBtn"
+                )
+                .classList.remove(
+                    "hidden"
+                );
+
+
+            /*
+               Save progress.
+            */
+
+            saveState();
+
+        }
+
+
+        /* =========================================================
+           NEXT QUESTION
+        ========================================================= */
+
+        function nextQuestion() {
+
+            state.currentQuestion++;
+
+
+            if (
+                state.currentQuestion >=
+                state.questions.length
+            ) {
+
+                finishQuiz();
+
+            } else {
+
+                showQuestion();
+
+            }
+
+        }
+
+
+        /* =========================================================
+           FINISH QUIZ
+        ========================================================= */
+
+        function finishQuiz() {
+
+            clearInterval(
+                timerInterval
+            );
+
+
+            const total =
+                state.questions.length;
+
+
+            const correct =
+                state.score;
+
+
+            const percentage =
+                Math.round(
+                    correct /
+                    total *
+                    100
+                );
+
+
+            /*
+               Save quiz result.
+            */
+
+            state.quizHistory.push({
+
+                subject: state.profile.subject,
+
+                correct: correct,
+
+                total: total,
+
+                date: new Date()
+                    .toLocaleDateString()
+
+            });
+
+
+            updateStreak();
+
+            saveState();
+
+
+            /*
+               Show 100% progress.
+            */
+
+            document
+                .getElementById(
+                    "quizProgress"
+                )
+                .style.width =
+                "100%";
+
+
+            /*
+               Show final result.
+            */
+
+            document
+                .getElementById(
+                    "question"
+                )
+                .innerHTML = `
+
+        🎉 Quiz Complete
+
+        <div style="
+            font-size:48px;
+            margin-top:15px;
+            color:var(--primary2);
+        ">
+
+            ${percentage}%
+
+        </div>
+
+        <div style="
+            font-size:16px;
+            color:var(--muted);
+            margin-top:10px;
+        ">
+
+            ${correct}
+            correct out of
+            ${total}
+
+        </div>
+
+    `;
+
+
+            document
+                .getElementById(
+                    "answers"
+                )
+                .innerHTML = `
+
+        <div class="recommendation">
+
+            ${
+                percentage >= 90
+
+                ?
+
+                "🔥 Excellent! Expert difficulty will be prioritized in your next quiz."
+
+                :
+
+                percentage >= 70
+
+                ?
+
+                "⚡ Strong performance! Hard questions will continue to appear."
+
+                :
+
+                "📚 The system will reinforce your weaker areas before increasing difficulty."
+
+            }
+
+        </div>
+
+    `;
+
+
+            document
+                .getElementById(
+                    "result"
+                )
+                .style.display =
+                "none";
+
+
+            document
+                .getElementById(
+                    "nextBtn"
+                )
+                .classList.add(
+                    "hidden"
+                );
+
+
+            renderDashboard();
+
+
+            showToast(
+                "Quiz analysis completed!"
+            );
+
+        }
+
+
+        /* =========================================================
+           QUIT QUIZ
+        ========================================================= */
+
+        function quitQuiz() {
+
+            clearInterval(
+                timerInterval
+            );
+
+
+            document
+                .getElementById(
+                    "quiz"
+                )
+                .style.display =
+                "none";
+
+
+            document
+                .getElementById(
+                    "dashboard"
+                )
+                .scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+
+
+        /* =========================================================
+           STREAK
+        ========================================================= */
+
+        function updateStreak() {
+
+            const today =
+                new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+            if (
+                state.lastStudyDate ===
+                today
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                state.lastStudyDate
+            ) {
+
+                const previous =
+                    new Date(
+                        state.lastStudyDate
+                    );
+
+
+                const current =
+                    new Date(today);
+
+
+                const difference =
+                    Math.round(
+                        (
+                            current -
+                            previous
+                        ) /
+                        (
+                            1000 *
+                            60 *
+                            60 *
+                            24
+                        )
+                    );
+
+
+                if (difference === 1) {
+
+                    state.streak++;
+
+                } else {
+
+                    state.streak = 1;
+
+                }
+
+            } else {
+
+                state.streak = 1;
+
+            }
+
+
+            state.lastStudyDate =
+                today;
+
+        }
+
+
+        /* =========================================================
+           THEME
+        ========================================================= */
+
+        function toggleTheme() {
+
+            document.body
+                .classList
+                .toggle("light");
+
+
+            const light =
+                document.body
+                .classList
+                .contains("light");
+
+
+            localStorage.setItem(
+                "studyTheme",
+                light ?
+                "light" :
+                "dark"
+            );
+
+        }
+
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        function resetData() {
+
+            if (!confirm(
+                    "Delete your StudyAI profile and all progress?"
+                )) {
+
+                return;
+
+            }
+
+
+            localStorage.removeItem(
+                "studyAIAdvanced"
+            );
+
+
+            state = {
+
+                profile: null,
+
+                currentQuestion: 0,
+
+                questions: [],
+
+                score: 0,
+
+                answered: false,
+
+                quizHistory: [],
+
+                topicStats: {},
+
+                streak: 0,
+
+                lastStudyDate: null
+
+            };
+
+
+            location.reload();
+
+        }
+
+
+        /* =========================================================
+           TOAST
+        ========================================================= */
+
+        function showToast(message) {
+
+            const toast =
+                document.getElementById(
+                    "toast"
+                );
+
+
+            toast.innerText =
+                message;
+
+
+            toast.classList.add(
+                "show"
+            );
+
+
+            setTimeout(
+                () => {
+
+                    toast.classList.remove(
+                        "show"
+                    );
+
+                },
+                3000
+            );
+
+        }
+
+
+        /* =========================================================
+           INITIALIZATION
+        ========================================================= */
+
+        window.onload = () => {
+
+            const theme =
+                localStorage.getItem(
+                    "studyTheme"
+                );
+
+
+            if (theme === "light") {
+
+                document.body
+                    .classList
+                    .add("light");
+
+            }
+
+
+            loadState();
+
+        };
+    </script>
+
+</body>
+
+</html>
